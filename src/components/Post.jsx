@@ -27,7 +27,8 @@ function Post({ post }) {
         ))}
 
         <div className="alert alert-success reactions mt-3" role="alert">
-          This post has been reacted by {post.reactions} people.
+          👍 {post.reactions.likes} Likes &nbsp; | &nbsp; 👎{" "}
+          {post.reactions.dislikes} Dislikes
         </div>
       </div>
     </div>

@@ -1,52 +1,28 @@
 import { createContext, useReducer } from "react";
 
-const DEFAULT_POST_LIST = [
-  {
-    id: "1",
-    title: "Going to Delhi",
-    body: "Hi, friends I am going to Delhi for my vacations. Hope to enjoy a location. Peace out",
-    reactions: 2,
-    userID: "user-7",
-    tags: ["vacation", "Delhi", "Enjoying"],
-  },
-  {
-    id: "2",
-    title: "Pass ho bhai",
-    body: "4 sall ki masti k baad bhi hogye hain pass. Hard to believe.",
-    reactions: 15,
-    userID: "user-7",
-    tags: ["Graduating", "Unbelievable"],
-  },
-];
-
 const DEFAULT_CONTEXT = {
   postList: [],
   addPost: () => {},
+  addInitialPosts: () => {},
   deletePost: () => {},
 };
 
 export const PostList = createContext(DEFAULT_CONTEXT);
 
 const postListReducer = (currentPostList, action) => {
-  switch (action.type) {
-    case "ADD_POST":
-      return [action.payload, ...currentPostList];
-
-    case "DELETE_POST":
-      return currentPostList.filter(
-        (post) => post.id !== action.payload.postId
-      );
-
-    default:
-      return currentPostList;
+  if (action.type === "ADD_POST") {
+    return [action.payload, ...currentPostList];
+  } else if (action.type === "DELETE_POST") {
+    return currentPostList.filter((post) => post.id !== action.payload.postId);
+  } else if (action.type === "ADD_INITIAL_POSTS") {
+    return [...action.payload.posts];
+  } else {
+    return currentPostList;
   }
 };
 
 const PostListProvider = ({ children }) => {
-  const [postList, dispatchPostList] = useReducer(
-    postListReducer,
-    DEFAULT_POST_LIST
-  );
+  const [postList, dispatchPostList] = useReducer(postListReducer, []);
 
   const addPost = (userID, title, body, reactions, tags) => {
     dispatchPostList({
@@ -62,6 +38,13 @@ const PostListProvider = ({ children }) => {
     });
   };
 
+  const addInitialPosts = (posts) => {
+    dispatchPostList({
+      type: "ADD_INITIAL_POSTS",
+      payload: { posts },
+    });
+  };
+
   const deletePost = (postId) => {
     dispatchPostList({
       type: "DELETE_POST",
@@ -70,7 +53,9 @@ const PostListProvider = ({ children }) => {
   };
 
   return (
-    <PostList.Provider value={{ postList, addPost, deletePost }}>
+    <PostList.Provider
+      value={{ postList, addPost, deletePost, addInitialPosts }}
+    >
       {children}
     </PostList.Provider>
   );
