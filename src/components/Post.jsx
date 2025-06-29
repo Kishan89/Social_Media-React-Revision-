@@ -5,6 +5,12 @@ import { PostList } from "../store/post-list";
 function Post({ post }) {
   const { deletePost } = useContext(PostList);
 
+  // Calculate total reactions if post.reactions is an object
+  const totalReactions =
+    typeof post.reactions === "object"
+      ? (post.reactions.likes || 0) + (post.reactions.dislikes || 0)
+      : post.reactions;
+
   return (
     <div className="card post-card">
       <div className="card-body">
@@ -27,8 +33,7 @@ function Post({ post }) {
         ))}
 
         <div className="alert alert-success reactions mt-3" role="alert">
-          👍 {post.reactions.likes} Likes &nbsp; | &nbsp; 👎{" "}
-          {post.reactions.dislikes} Dislikes
+          🔁 Reactions: {totalReactions}
         </div>
       </div>
     </div>

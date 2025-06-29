@@ -9,21 +9,46 @@ function CreatePost() {
   const postBodyElement = useRef();
   const reactionsElement = useRef();
   const tagsElement = useRef();
+
   const handleSubmit = (event) => {
     event.preventDefault();
+
     const userId = userIdElement.current.value;
     const postTitle = postTitleElement.current.value;
     const postBody = postBodyElement.current.value;
-    const reactions = reactionsElement.current.value;
+    const reactions = parseInt(reactionsElement.current.value) || 0;
     const tags = tagsElement.current.value.split(" ");
+
+    // Clear input fields
     userIdElement.current.value = "";
     postTitleElement.current.value = "";
     postBodyElement.current.value = "";
     reactionsElement.current.value = "";
     tagsElement.current.value = "";
 
-    addPost(userId, postTitle, postBody, reactions, tags);
+    const newPost = {
+      title: postTitle,
+      body: postBody,
+      reactions,
+      userId,
+      tags,
+    };
+
+    fetch("https://dummyjson.com/posts/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newPost),
+    })
+      .then((res) => res.json())
+      .then((resObj) => {
+        console.log("Post created:", resObj);
+        addPost(resObj);
+      })
+      .catch((err) => {
+        console.error("Error adding post:", err);
+      });
   };
+
   return (
     <form className="create-post" onSubmit={handleSubmit}>
       <div className="form-group">
@@ -51,7 +76,6 @@ function CreatePost() {
       <div className="form-group">
         <label htmlFor="body">Post Content:</label>
         <textarea
-          type="text"
           rows="4"
           ref={postBodyElement}
           className="form-control"
@@ -63,7 +87,7 @@ function CreatePost() {
       <div className="form-group">
         <label htmlFor="reactions">Number of reactions:</label>
         <input
-          type="text"
+          type="number"
           ref={reactionsElement}
           className="form-control"
           id="reactions"
@@ -81,6 +105,7 @@ function CreatePost() {
           placeholder="Please enter tags using space."
         />
       </div>
+
       <button type="submit" className="btn btn-primary">
         Submit
       </button>
