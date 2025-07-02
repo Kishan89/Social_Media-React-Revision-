@@ -1,61 +1,13 @@
-import { useContext, useRef } from "react";
-import { PostList } from "../store/post-list";
-
+import { Form } from "react-router-dom";
+import { redirect } from "react-router-dom";
 function CreatePost() {
-  const { addPost } = useContext(PostList);
-
-  const userIdElement = useRef();
-  const postTitleElement = useRef();
-  const postBodyElement = useRef();
-  const reactionsElement = useRef();
-  const tagsElement = useRef();
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-
-    const userId = userIdElement.current.value;
-    const postTitle = postTitleElement.current.value;
-    const postBody = postBodyElement.current.value;
-    const reactions = parseInt(reactionsElement.current.value) || 0;
-    const tags = tagsElement.current.value.split(" ");
-
-    // Clear input fields
-    userIdElement.current.value = "";
-    postTitleElement.current.value = "";
-    postBodyElement.current.value = "";
-    reactionsElement.current.value = "";
-    tagsElement.current.value = "";
-
-    const newPost = {
-      title: postTitle,
-      body: postBody,
-      reactions,
-      userId,
-      tags,
-    };
-
-    fetch("https://dummyjson.com/posts/add", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newPost),
-    })
-      .then((res) => res.json())
-      .then((resObj) => {
-        console.log("Post created:", resObj);
-        addPost(resObj);
-      })
-      .catch((err) => {
-        console.error("Error adding post:", err);
-      });
-  };
-
   return (
-    <form className="create-post" onSubmit={handleSubmit}>
+    <Form method="post" className="create-post">
       <div className="form-group">
         <label htmlFor="userId">Enter your UserId here:</label>
         <input
           type="text"
-          ref={userIdElement}
+          name="userId"
           className="form-control"
           id="userId"
           placeholder="Your user id"
@@ -66,7 +18,7 @@ function CreatePost() {
         <label htmlFor="title">Post Title:</label>
         <input
           type="text"
-          ref={postTitleElement}
+          name="title"
           className="form-control"
           id="title"
           placeholder="How are you feeling today..."
@@ -77,7 +29,7 @@ function CreatePost() {
         <label htmlFor="body">Post Content:</label>
         <textarea
           rows="4"
-          ref={postBodyElement}
+          name="body"
           className="form-control"
           id="body"
           placeholder="Tell us more about it."
@@ -88,7 +40,7 @@ function CreatePost() {
         <label htmlFor="reactions">Number of reactions:</label>
         <input
           type="number"
-          ref={reactionsElement}
+          name="reactions"
           className="form-control"
           id="reactions"
           placeholder="How many people reacted to this post."
@@ -99,7 +51,7 @@ function CreatePost() {
         <label htmlFor="tags">Enter your Hashtags here:</label>
         <input
           type="text"
-          ref={tagsElement}
+          name="tags"
           className="form-control"
           id="tags"
           placeholder="Please enter tags using space."
@@ -109,8 +61,36 @@ function CreatePost() {
       <button type="submit" className="btn btn-primary">
         Submit
       </button>
-    </form>
+    </Form>
   );
+}
+
+export async function createPostAction({ request }) {
+  const formData = await request.formData();
+  const postData = Object.fromEntries(formData);
+
+  const newPost = {
+    title: postData.title,
+    body: postData.body,
+    reactions: parseInt(postData.reactions),
+    userId: postData.userId,
+    tags: postData.tags.split(" "),
+  };
+
+  const response = await fetch("https://dummyjson.com/posts/add", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(newPost),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to create post.");
+  }
+
+  const result = await response.json();
+  console.log("Post created:", result);
+
+  return redirect("/");
 }
 
 export default CreatePost;
